@@ -52,7 +52,7 @@
             
             @if ($errors->any())
                 <div class="alert alert-danger">
-                    {{ $errors->first() }}
+                    {{ $errors->first() }} <!-- Tampilkan pesan error jika login gagal -->
                 </div>
             @endif
 
@@ -60,16 +60,17 @@
                 @csrf
                 <div class="form-group">
                     <label for="login">Email atau Username:</label>
-                    <input type="text" name="login" id="login" class="form-control" required>
+                    <input type="text" name="login" id="login" class="form-control" placeholder="Enter email or username" required>
                 </div>
                 <div class="form-group">
                     <label for="password">Password:</label>
-                    <input type="password" name="password" id="password" class="form-control" required>
+                    <input type="password" name="password" id="password" class="form-control" placeholder="Enter password" required>
                 </div>
                 <button type="submit" class="btn btn-primary">Login</button>
             </form>
 
             <p>Don't have an account? <a href="{{ route('register') }}">Register here</a></p>
+            <p>Forgot your password? <a href="#">Click here to reset</a></p>
         </div>
     </div>
 </body>

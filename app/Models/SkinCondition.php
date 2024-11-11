@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class SkinCondition extends Model
 {
     use HasFactory;
+    protected $primaryKey = 'condition_id';
     protected $fillable = [
         'condition_name',
         'description',
