@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class UserRecommendation extends Model
 {
     use HasFactory;
+    protected $primaryKey = 'recommendation_id';
     protected $fillable = [
         'condition_id',
         'product_id',
