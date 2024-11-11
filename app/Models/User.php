@@ -2,44 +2,73 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Foundation\Auth\User as Authenticatable; // Gunakan Authenticatable
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Tymon\JWTAuth\Contracts\JWTSubject; // Tambahkan ini untuk JWT
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject // Ganti dari 'Users' ke 'User'
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory, Notifiable; // Tambahkan Notifiable untuk notifikasi, jika diperlukan
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var array
      */
     protected $fillable = [
-        'name',
+        'username',
         'email',
         'password',
+        'profile_image',
+        'gender',
+        'age',
+        'level',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * The attributes that should be hidden for arrays.
      *
-     * @var array<int, string>
+     * @var array
      */
     protected $hidden = [
-        'password',
+        'password', // Sembunyikan password saat data diambil
         'remember_token',
     ];
 
     /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
+     * Relasi dengan model UserHistory
      */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
+    public function userHistories()
+    {
+        return $this->hasMany(UserHistory::class);
+    }
+
+    /**
+     * Relasi dengan model UserRecommendation
+     */
+    public function recommendations()
+    {
+        return $this->hasMany(UserRecommendation::class);
+    }
+
+    /**
+     * Mengambil identifier yang akan disimpan di dalam token JWT.
+     *
+     * @return mixed
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Mengambil array custom claims yang akan ditambahkan ke token JWT.
+     *
+     * @return array
+     */
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 }
