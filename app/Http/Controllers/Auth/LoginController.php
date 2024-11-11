@@ -72,4 +72,18 @@ class LoginController extends Controller
         // Jika user biasa, arahkan ke halaman home atau dashboard user
         return redirect()->route('user.dashboard'); // Sesuaikan rute ini
     }
+
+     /**
+     * Menangani proses logout.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function logout()
+    {
+        // Logout pengguna
+        Auth::logout();
+
+        // Redirect ke halaman login
+        return redirect()->route('login')->with('success', 'You have been logged out.');
+    }
 }
