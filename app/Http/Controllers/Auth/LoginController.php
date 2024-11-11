@@ -8,22 +8,13 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    /**
-     * Menampilkan halaman login.
-     *
-     * @return \Illuminate\View\View
-     */
+
     public function showLoginForm()
     {
         return view('auth.login');
     }
 
-    /**
-     * Menangani proses login.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\Response
-     */
+
     public function login(Request $request)
     {
         // Validasi input
@@ -56,12 +47,7 @@ class LoginController extends Controller
         ]);
     }
 
-    /**
-     * Mengarahkan pengguna setelah login berhasil berdasarkan perannya.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\RedirectResponse
-     */
+   
     protected function handleRedirect($user)
     {
         if ($user->level == 'admin') {
@@ -73,11 +59,7 @@ class LoginController extends Controller
         return redirect()->route('user.dashboard'); // Sesuaikan rute ini
     }
 
-     /**
-     * Menangani proses logout.
-     *
-     * @return \Illuminate\Http\RedirectResponse
-     */
+    
     public function logout()
     {
         // Logout pengguna
