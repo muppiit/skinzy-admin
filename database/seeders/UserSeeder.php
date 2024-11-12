@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
@@ -13,26 +13,32 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Tambahkan admin
         User::create([
             'username' => 'admin',
             'email' => 'admin@example.com',
-            'password' => Hash::make('admin'), // Gantilah dengan password yang aman
-            'profile_image' => '', // Gantilah dengan path yang sesuai
-            'gender' => 'L', // L = Laki-laki, P = Perempuan
+            'password' => Hash::make('password123'),
+            'profile_image' => null,
+            'gender' => 'l', // male
             'age' => 30,
             'level' => 'admin',
+            'phone_number' => '1234567890',
+            'first_name' => 'Admin',
+            'last_name' => 'User',
+            'birth_date' => '1993-01-01',
         ]);
 
-        // Tambahkan user biasa
         User::create([
-            'username' => 'user1',
-            'email' => 'kaifu.fid@gmail.com',
-            'password' => Hash::make('12345'), // Gantilah dengan password yang aman
-            'profile_image' => '', // Gantilah dengan path yang sesuai
-            'gender' => 'P', // L = Laki-laki, P = Perempuan
+            'username' => 'user',
+            'email' => 'user@example.com',
+            'password' => Hash::make('password123'),
+            'profile_image' => null,
+            'gender' => 'p', // female
             'age' => 25,
             'level' => 'user',
+            'phone_number' => '0987654321',
+            'first_name' => 'Regular',
+            'last_name' => 'User',
+            'birth_date' => '1998-02-15',
         ]);
     }
 }

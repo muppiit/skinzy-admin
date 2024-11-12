@@ -23,6 +23,7 @@ Route::post('refresh', [LoginController::class, 'refresh'])->middleware('jwt.ver
 Route::post('register', [RegisterController::class, 'register']);
 Route::middleware('auth:api')->get('/user/profile', [UserController::class, 'profile']);
 Route::middleware('auth:api')->get('/user/profile-info', [UserController::class, 'getProfileInfo']);
+Route::middleware('auth:api')->put('/user/update', [UserController::class, 'update']);
 
 // Rute lain yang memerlukan autentikasi JWT
 Route::group(['middleware' => ['jwt.verify']], function() {
