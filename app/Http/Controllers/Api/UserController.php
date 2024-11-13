@@ -100,4 +100,28 @@ class UserController extends Controller
             'user' => $user
         ]);
     }
+
+    public function getUserHistory(Request $request)
+    {
+        // Mengambil user yang sedang login
+        $user = JWTAuth::parseToken()->authenticate();
+
+        // Mengambil riwayat berdasarkan user_id
+        $userHistories = UserHistory::where('user_id', $user->id)->get();
+
+        // Pengecekan apakah user memiliki history
+        if ($userHistories->isEmpty()) {
+            // Jika tidak ada history, kembalikan pesan bahwa belum ada riwayat
+            return response()->json([
+                'status' => 'success',
+                'message' => 'No history found for this user'
+            ], 200);
+        }
+
+        // Mengembalikan data riwayat dalam format JSON
+        return response()->json([
+            'status' => 'success',
+            'data' => $userHistories
+        ], 200);
+    }
 }
