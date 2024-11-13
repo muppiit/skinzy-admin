@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\LoginController;
+use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RegisterController;
 use App\Http\Controllers\Api\UserController;
 
@@ -24,6 +25,7 @@ Route::post('register', [RegisterController::class, 'register']);
 Route::middleware('auth:api')->get('/user/profile', [UserController::class, 'profile']);
 Route::middleware('auth:api')->get('/user/profile-info', [UserController::class, 'getProfileInfo']);
 Route::middleware('auth:api')->put('/user/update', [UserController::class, 'update']);
+Route::get('/products', [ProductController::class, 'index']);
 
 // Rute lain yang memerlukan autentikasi JWT
 Route::group(['middleware' => ['jwt.verify']], function() {
