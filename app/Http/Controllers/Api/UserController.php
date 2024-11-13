@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\User;
+use App\Models\UserHistory;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
@@ -47,10 +48,11 @@ class UserController extends Controller
     {
         $user = JWTAuth::parseToken()->authenticate();
 
+        // Validasi request termasuk gambar
         $validator = Validator::make($request->all(), [
             'username' => 'string|max:255',
             'email' => 'email|max:255',
-            'profile_image' => 'string|max:255',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // Validasi untuk gambar
             'gender' => 'in:l,p',
             'age' => 'integer|min:1',
             'level' => 'string|max:255',
@@ -60,15 +62,23 @@ class UserController extends Controller
             'birth_date' => 'nullable|date',
             'password' => 'nullable|string|min:8|confirmed'
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 422);
         }
-    
+
+        // Jika ada gambar yang di-upload
+        if ($request->hasFile('profile_image')) {
+            $file = $request->file('profile_image');
+            // Simpan gambar ke folder public/storage/profile_images
+            $path = $file->store('profile_images', 'public');
+            // Update kolom 'profile_image' dengan path gambar yang baru
+            $user->profile_image = $path;
+        }
+
         // Assign new values explicitly
         $user->username = $request->username ?? $user->username;
         $user->email = $request->email ?? $user->email;
-        $user->profile_image = $request->profile_image ?? $user->profile_image;
         $user->gender = $request->gender ?? $user->gender;
         $user->age = $request->age ?? $user->age;
         $user->level = $request->level ?? $user->level;
@@ -76,18 +86,42 @@ class UserController extends Controller
         $user->first_name = $request->first_name ?? $user->first_name;
         $user->last_name = $request->last_name ?? $user->last_name;
         $user->birth_date = $request->birth_date ?? $user->birth_date;
-    
+
         // Hash the password if it's provided
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
         }
-    
-        // Save and confirm
+
+        // Simpan perubahan
         $user->save();
-    
+
         return response()->json([
             'message' => 'User profile updated successfully',
             'user' => $user
         ]);
+    }
+
+    public function getUserHistory(Request $request)
+    {
+        // Mengambil user yang sedang login
+        $user = JWTAuth::parseToken()->authenticate();
+
+        // Mengambil riwayat berdasarkan user_id
+        $userHistories = UserHistory::where('user_id', $user->id)->get();
+
+        // Pengecekan apakah user memiliki history
+        if ($userHistories->isEmpty()) {
+            // Jika tidak ada history, kembalikan pesan bahwa belum ada riwayat
+            return response()->json([
+                'status' => 'success',
+                'message' => 'No history found for this user'
+            ], 200);
+        }
+
+        // Mengembalikan data riwayat dalam format JSON
+        return response()->json([
+            'status' => 'success',
+            'data' => $userHistories
+        ], 200);
     }
 }
