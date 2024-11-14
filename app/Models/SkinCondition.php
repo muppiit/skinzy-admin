@@ -18,4 +18,8 @@ class SkinCondition extends Model
     {
         return $this->hasMany(UserRecommendation::class);
     }
+    public function treatment()
+    {
+        return $this->belongsTo(Treatment::class);
+    }
 }

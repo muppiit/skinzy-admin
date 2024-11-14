@@ -25,10 +25,10 @@ class UserRecommendation extends Model
         return $this->belongsTo(Product::class, 'product_id');
     }
 
-    public function treatment()
-    {
-        return $this->belongsTo(Treatment::class, 'id_treatment');
-    }
+    // public function treatment()
+    // {
+    //     return $this->belongsTo(Treatment::class, 'id_treatment');
+    // }
 
     public function userHistory()
     {

@@ -11,7 +11,7 @@ class TreatmentController extends Controller
     public function index()
     {
         // Mengambil semua data treatment dengan kolom tertentu
-        $treatments = Treatment::all(['id_treatment', 'deskripsi_treatment']);
+        $treatments = Treatment::all();
 
         // Mengembalikan data dalam format JSON
         return response()->json([
