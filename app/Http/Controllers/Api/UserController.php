@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Http;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -10,6 +11,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+
 
 class UserController extends Controller
 {
@@ -115,31 +118,35 @@ class UserController extends Controller
         try {
             $user = JWTAuth::parseToken()->authenticate();
     
-            // Validate the profile image upload
+            // Validasi file gambar
             $request->validate([
                 'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
     
-            // File upload handling
             if ($request->hasFile('profile_image')) {
                 $file = $request->file('profile_image');
     
                 if ($file->isValid()) {
-                    // Remove old profile image if it exists
+                    // Hapus gambar lama jika ada
                     if ($user->profile_image) {
-                        Storage::disk('public')->delete($user->profile_image);
+                        // Menghapus berdasarkan URL publik sebelumnya jika Cloudinary mendukung ini
+                        Cloudinary::destroy($user->profile_image);
                     }
     
-                    // Store the new image
-                    $fileName = time() . '_' . $file->getClientOriginalName();
-                    $filePath = $file->storeAs('profile-images', $fileName, 'public');
+                    // Upload gambar ke Cloudinary
+                    $result = Cloudinary::upload($file->getRealPath(), [
+                        'folder' => 'profile-images', // folder di Cloudinary untuk penyimpanan gambar
+                    ]);
     
-                    $user->profile_image = $filePath;
+                    $url = $result->getSecurePath(); // Dapatkan URL aman dari gambar yang diupload
+    
+                    // Simpan URL di database
+                    $user->profile_image = $url;
                     $user->save();
     
                     return response()->json([
                         'message' => 'Profile image updated successfully',
-                        'profile_image' => $filePath
+                        'profile_image' => $url,
                     ]);
                 } else {
                     return response()->json(['error' => 'Invalid file upload'], 422);
@@ -152,5 +159,4 @@ class UserController extends Controller
             return response()->json(['error' => 'An error occurred while updating the profile image.'], 500);
         }
     }
-    
 }
