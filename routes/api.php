@@ -27,6 +27,8 @@ Route::post('register', [RegisterController::class, 'register']);
 Route::middleware('auth:api')->get('/user/profile', [UserController::class, 'profile']);
 Route::middleware('auth:api')->get('/user/profile-info', [UserController::class, 'getProfileInfo']);
 Route::middleware('auth:api')->put('/user/update', [UserController::class, 'update']);
+Route::post('/user/update-profile-image', [UserController::class, 'updateProfileImage'])->middleware('auth:api');
+
 Route::get('/user/history', [UserController::class, 'getUserHistory']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/skin-conditions', [SkinConditionController::class, 'index']);

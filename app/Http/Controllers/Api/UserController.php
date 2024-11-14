@@ -3,59 +3,48 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Http;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\User;
 use App\Models\UserHistory;
-use Illuminate\Support\Facades\Validator;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
-
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
-    // Konstruktor untuk mengaktifkan middleware
     public function __construct()
     {
-        $this->middleware('auth:api'); // Middleware untuk memastikan pengguna terautentikasi
+        $this->middleware('auth:api'); // Middleware otentikasi
+    }
+
+    // Fungsi untuk mendapatkan pengguna yang sedang login
+    private function getAuthenticatedUser()
+    {
+        return JWTAuth::parseToken()->authenticate();
     }
 
     // Menampilkan informasi pengguna yang sedang login
-    public function profile(Request $request)
+    public function profile()
     {
-        // Mengambil pengguna yang sedang diautentikasi
-        $user = JWTAuth::parseToken()->authenticate();
-
-        // Menampilkan informasi pengguna dalam format JSON
-        return response()->json([
-            'user' => $user
-        ]);
+        return response()->json(['user' => $this->getAuthenticatedUser()]);
     }
 
-    // Menampilkan hanya atribut tertentu, seperti profil
-    public function getProfileInfo(Request $request)
+    // Menampilkan hanya atribut tertentu dari profil
+    public function getProfileInfo()
     {
-        $user = JWTAuth::parseToken()->authenticate();
-
-        // Mengambil informasi user tertentu saja, misalnya username, email, profil, dll.
-        $userInfo = $user; // If $user is already an array containing all the attributes
-
-        return response()->json([
-            'user' => $userInfo
-        ]);
+        $user = $this->getAuthenticatedUser();
+        return response()->json(['user' => $user]);
     }
 
-    // Update user information
-    public function update(Request $request)
+    // Fungsi untuk validasi input pengguna
+    private function validateUserInput($request, $isProfileImageRequired = false)
     {
-        $user = JWTAuth::parseToken()->authenticate();
-
-        // Validasi request termasuk gambar
-        $validator = Validator::make($request->all(), [
+        $rules = [
             'username' => 'string|max:255',
             'email' => 'email|max:255',
-            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // Validasi untuk gambar
+            'profile_image' => $isProfileImageRequired ? 'required|image|mimes:jpeg,png,jpg,gif|max:2048' : 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'gender' => 'in:l,p',
             'age' => 'integer|min:1',
             'level' => 'string|max:255',
@@ -64,22 +53,23 @@ class UserController extends Controller
             'last_name' => 'nullable|string|max:255',
             'birth_date' => 'nullable|date',
             'password' => 'nullable|string|min:8|confirmed'
-        ]);
+        ];
+        
+        return Validator::make($request->all(), $rules);
+    }
 
+    // Update profil pengguna
+    public function update(Request $request)
+    {
+        $user = $this->getAuthenticatedUser();
+    
+        // Validasi input
+        $validator = $this->validateUserInput($request);
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 422);
         }
-
-        // Jika ada gambar yang di-upload
-        if ($request->hasFile('profile_image')) {
-            $file = $request->file('profile_image');
-            // Simpan gambar ke folder public/storage/profile_images
-            $path = $file->store('profile_images', 'public');
-            // Update kolom 'profile_image' dengan path gambar yang baru
-            $user->profile_image = $path;
-        }
-
-        // Assign new values explicitly
+    
+        // Update profil
         $user->username = $request->username ?? $user->username;
         $user->email = $request->email ?? $user->email;
         $user->gender = $request->gender ?? $user->gender;
@@ -89,39 +79,69 @@ class UserController extends Controller
         $user->first_name = $request->first_name ?? $user->first_name;
         $user->last_name = $request->last_name ?? $user->last_name;
         $user->birth_date = $request->birth_date ?? $user->birth_date;
-
-        // Hash the password if it's provided
+    
+        // Update password jika diisi
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
         }
-
+    
         // Simpan perubahan
         $user->save();
-
+    
         return response()->json([
             'message' => 'User profile updated successfully',
             'user' => $user
         ]);
     }
-
-    public function getUserHistory(Request $request)
+    
+    // Update gambar profil pengguna
+    public function updateProfileImage(Request $request)
     {
-        // Mengambil user yang sedang login
-        $user = JWTAuth::parseToken()->authenticate();
+        try {
+            $user = $this->getAuthenticatedUser();
 
-        // Mengambil riwayat berdasarkan user_id
+            // Validasi gambar profil
+            $validator = $this->validateUserInput($request, true);
+            if ($validator->fails()) {
+                return response()->json(['error' => $validator->errors()], 422);
+            }
+
+            if ($request->hasFile('profile_image')) {
+                $file = $request->file('profile_image');
+                if ($user->profile_image) {
+                    Cloudinary::destroy($user->profile_image); // Menghapus gambar lama
+                }
+                // Upload gambar ke Cloudinary
+                $result = Cloudinary::upload($file->getRealPath(), ['folder' => 'profile-images']);
+                $user->profile_image = $result->getSecurePath();
+                $user->save();
+
+                return response()->json([
+                    'message' => 'Profile image updated successfully',
+                    'profile_image' => $user->profile_image,
+                ]);
+            }
+
+            return response()->json(['error' => 'No file uploaded'], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating profile image: ' . $e->getMessage());
+            return response()->json(['error' => 'An error occurred while updating the profile image.'], 500);
+        }
+    }
+
+    // Mendapatkan riwayat pengguna
+    public function getUserHistory()
+    {
+        $user = $this->getAuthenticatedUser();
         $userHistories = UserHistory::where('user_id', $user->id)->get();
 
-        // Pengecekan apakah user memiliki history
         if ($userHistories->isEmpty()) {
-            // Jika tidak ada history, kembalikan pesan bahwa belum ada riwayat
             return response()->json([
                 'status' => 'success',
                 'message' => 'No history found for this user'
             ], 200);
         }
 
-        // Mengembalikan data riwayat dalam format JSON
         return response()->json([
             'status' => 'success',
             'data' => $userHistories
