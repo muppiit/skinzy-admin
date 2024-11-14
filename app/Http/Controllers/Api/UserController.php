@@ -129,22 +129,29 @@ class UserController extends Controller
         }
     }
 
-    // Mendapatkan riwayat pengguna
     public function getUserHistory()
     {
+        // Get the authenticated user
         $user = $this->getAuthenticatedUser();
-        $userHistories = UserHistory::where('user_id', $user->id)->get();
-
+    
+        // Fetch the user's history along with the related recommendations
+        $userHistories = UserHistory::with('recommendation.skinCondition', 'recommendation.product')
+            ->where('user_id', $user->id)
+            ->get();
+    
+        // Check if there are any histories
         if ($userHistories->isEmpty()) {
             return response()->json([
                 'status' => 'success',
                 'message' => 'No history found for this user'
             ], 200);
         }
-
+    
+        // Return the history with the related user recommendations
         return response()->json([
             'status' => 'success',
             'data' => $userHistories
         ], 200);
     }
+    
 }
