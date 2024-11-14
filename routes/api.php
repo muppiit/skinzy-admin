@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RegisterController;
+use App\Http\Controllers\Api\SkinConditionController;
+use App\Http\Controllers\Api\TreatmentController;
 use App\Http\Controllers\Api\UserController;
 
 /*
@@ -22,18 +24,13 @@ Route::post('login', [LoginController::class, 'login']);
 Route::post('logout', [LoginController::class, 'logout'])->middleware('jwt.verify');
 Route::post('refresh', [LoginController::class, 'refresh'])->middleware('jwt.verify');
 Route::post('register', [RegisterController::class, 'register']);
-
-Route::middleware('auth:api')->group(function () {
-    Route::get('/user/profile', [UserController::class, 'profile']);
-
-    Route::get('/user/profile-info', [UserController::class, 'getProfileInfo']);
-
-    Route::put('/user/update', [UserController::class, 'update']);
-
-    Route::post('/user/update-profile-image', [UserController::class, 'updateProfileImage']);
-
-});
+Route::middleware('auth:api')->get('/user/profile', [UserController::class, 'profile']);
+Route::middleware('auth:api')->get('/user/profile-info', [UserController::class, 'getProfileInfo']);
+Route::middleware('auth:api')->put('/user/update', [UserController::class, 'update']);
+Route::get('/user/history', [UserController::class, 'getUserHistory']);
 Route::get('/products', [ProductController::class, 'index']);
+Route::get('/skin-conditions', [SkinConditionController::class, 'index']);
+Route::get('/treatments', [TreatmentController::class, 'index']);
 
 // Rute lain yang memerlukan autentikasi JWT
 Route::group(['middleware' => ['jwt.verify']], function() {
