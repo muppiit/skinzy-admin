@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('product_image')->nullable(); // Kolom gambar produk, bisa kosong
             $table->decimal('price', 8, 2); // Kolom harga produk dengan dua desimal
             $table->integer('stok'); // Kolom stok produk
+            $table->integer('rating'); // Kolom stok produk
             $table->timestamps(); // Kolom created_at dan updated_at otomatis
         });
     }
