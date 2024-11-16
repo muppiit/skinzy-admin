@@ -24,6 +24,7 @@
                 <tr>
                     <th>Condition Name</th>
                     <th>Description</th>
+                    <th>Treatment</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -32,12 +33,13 @@
                     <tr>
                         <td>{{ $condition->condition_name }}</td>
                         <td>{{ $condition->description }}</td>
+                        <td>{{ $condition->treatment ? $condition->treatment->id_treatment : 'No Treatment Assigned' }}</td>
                         <td>
                             <a href="{{ route('skinConditions.edit', $condition->condition_id) }}" class="btn btn-warning">Edit</a>
                             <form action="{{ route('skinConditions.destroy', $condition->condition_id) }}" method="POST" style="display:inline-block;">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger">Delete</button>
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this condition?')">Delete</button>
                             </form>
                         </td>
                     </tr>

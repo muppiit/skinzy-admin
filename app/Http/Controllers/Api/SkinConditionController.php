@@ -11,7 +11,7 @@ class SkinConditionController extends Controller
     public function index()
     {
         // Mengambil semua data skin conditions
-        $conditions = SkinCondition::all();
+        $conditions = SkinCondition::with('treatment')->get();
 
         // Mengembalikan data dalam format JSON
         return response()->json([

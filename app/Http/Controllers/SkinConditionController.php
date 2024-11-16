@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\SkinCondition;
+use App\Models\Treatment; // Tambahkan ini untuk mengambil data treatment
 use Illuminate\Http\Request;
 
 class SkinConditionController extends Controller
@@ -17,7 +18,8 @@ class SkinConditionController extends Controller
     // Menampilkan form untuk membuat skin condition baru
     public function create()
     {
-        return view('skinConditions.create');
+        $treatments = Treatment::all(); // Ambil semua treatment untuk dropdown
+        return view('skinConditions.create', compact('treatments'));
     }
 
     // Menyimpan skin condition yang baru
@@ -27,12 +29,14 @@ class SkinConditionController extends Controller
         $request->validate([
             'condition_name' => 'required|string|max:255',
             'description' => 'required|string',
+            'id_treatment' => 'required|exists:treatments,id_treatment', // Validasi treatment
         ]);
 
         // Menyimpan data ke database
         SkinCondition::create([
             'condition_name' => $request->condition_name,
             'description' => $request->description,
+            'id_treatment' => $request->id_treatment, // Tambahkan field ini
         ]);
 
         return redirect()->route('skinConditions.index')->with('success', 'Skin condition created successfully.');
@@ -42,7 +46,8 @@ class SkinConditionController extends Controller
     public function edit($id)
     {
         $skinCondition = SkinCondition::findOrFail($id);
-        return view('skinConditions.edit', compact('skinCondition'));
+        $treatments = Treatment::all(); // Ambil semua treatment untuk dropdown
+        return view('skinConditions.edit', compact('skinCondition', 'treatments'));
     }
 
     // Memperbarui skin condition
@@ -51,12 +56,14 @@ class SkinConditionController extends Controller
         $request->validate([
             'condition_name' => 'required|string|max:255',
             'description' => 'required|string',
+            'id_treatment' => 'required|exists:treatments,id_treatment', // Validasi treatment
         ]);
 
         $skinCondition = SkinCondition::findOrFail($id);
         $skinCondition->update([
             'condition_name' => $request->condition_name,
             'description' => $request->description,
+            'id_treatment' => $request->id_treatment, // Tambahkan field ini
         ]);
 
         return redirect()->route('skinConditions.index')->with('success', 'Skin condition updated successfully.');
