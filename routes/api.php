@@ -31,6 +31,7 @@ Route::post('/user/update-profile-image', [UserController::class, 'updateProfile
 
 Route::get('/user/history', [UserController::class, 'getUserHistory']);
 Route::get('/products', [ProductController::class, 'index']);
+Route::get('/brands', [ProductController::class, 'indexBrands']); // New route for distinct brands
 Route::get('/skin-conditions', [SkinConditionController::class, 'index']);
 Route::get('/treatments', [TreatmentController::class, 'index']);
 

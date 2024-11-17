@@ -24,4 +24,23 @@ class ProductController extends Controller
             'data' => $products
         ]);
     }
+    public function indexBrands()
+    {
+        // Select distinct brands from the products table
+        $brands = Product::select('product_name') // or 'product_name' if you only want the product names
+                        ->distinct()
+                        ->get();
+
+        if ($brands->isEmpty()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No brands found'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $brands
+        ]);
+    }
 }
