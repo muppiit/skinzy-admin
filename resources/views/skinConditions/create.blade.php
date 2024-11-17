@@ -20,6 +20,16 @@
                 <textarea name="description" class="form-control" rows="4" required></textarea>
             </div>
 
+            <div class="form-group">
+                <label for="id_treatment">Select Treatment</label>
+                <select name="id_treatment" id="id_treatment" class="form-control" required>
+                    <option value="" disabled selected>-- Select a Treatment --</option>
+                    @foreach($treatments as $treatment)
+                    <option value="{{ $treatment->id_treatment }}">{{ $treatment->id_treatment }}</option>
+                    @endforeach
+                </select>
+            </div>
+
             <button type="submit" class="btn btn-success">Create</button>
         </form>
     </div>

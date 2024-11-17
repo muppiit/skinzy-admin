@@ -17,8 +17,5 @@ class Treatment extends Model
     {
         return $this->hasMany(UserRecommendation::class);
     }
-    public function skinCondition()
-    {
-        return $this->hasMany(related: SkinCondition::class);
-    }
 }
+    

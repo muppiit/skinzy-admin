@@ -13,8 +13,6 @@ return new class extends Migration
     {
         Schema::create('treatments', function (Blueprint $table) {
             $table->id('id_treatment'); // Kolom id_treatment otomatis sebagai primary key
-            $table->foreignId('condition_id')->constrained('skin_conditions', column: 'condition_id')->onDelete('cascade'); 
-
             $table->text('deskripsi_treatment'); // Kolom deskripsi treatment
             $table->timestamps(); // Kolom created_at dan updated_at otomatis
         });
