@@ -37,6 +37,14 @@
                         </p>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ route('skinpedia.index') }}" class="nav-link">
+                        <i class="nav-icon fas fa-book"></i> <!-- You can change the icon here -->
+                        <p>
+                            Skinpedia
+                        </p>
+                    </a>
+                </li>
              </ul>
          </nav>
          <!-- /.sidebar-menu -->

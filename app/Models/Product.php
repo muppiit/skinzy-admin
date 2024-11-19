@@ -17,10 +17,22 @@ class Product extends Model
         'product_image',
         'price',
         'stok',
+        'condition_id', // Tambahkan condition_id ke atribut yang bisa diisi
     ];
 
+    /**
+     * Relasi ke tabel UserRecommendation
+     */
     public function recommendations()
     {
         return $this->hasMany(UserRecommendation::class);
+    }
+
+    /**
+     * Relasi ke tabel SkinCondition
+     */
+    public function skinCondition()
+    {
+        return $this->belongsTo(SkinCondition::class, 'condition_id', 'condition_id');
     }
 }

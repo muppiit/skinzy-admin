@@ -41,6 +41,18 @@
                     <label for="stok">Stock:</label>
                     <input type="number" name="stok" id="stok" class="form-control" required>
                 </div>
+
+                <!-- Skin Condition Dropdown -->
+                <div class="form-group">
+                    <label for="skin_condition_id">Skin Condition:</label>
+                    <select name="condition_id" id="skin_condition_id" class="form-control">
+                        <option value="">Select Skin Condition</option>
+                        @foreach($skinConditions as $condition)
+                            <option value="{{ $condition->condition_id }}">{{ $condition->condition_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <button type="submit" class="btn btn-success">Create Product</button>
                 <a href="{{ route('products.index') }}" class="btn btn-secondary">Back to List</a>
             </form>

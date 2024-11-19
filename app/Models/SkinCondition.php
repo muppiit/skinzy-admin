@@ -32,4 +32,10 @@ class SkinCondition extends Model
     {
         return $this->belongsTo(Treatment::class, 'id_treatment');
     }
+
+    // Model SkinCondition
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }

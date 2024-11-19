@@ -13,7 +13,6 @@ class UserRecommendation extends Model
 
     protected $fillable = [
         'condition_id',
-        'product_id',
     ];
 
     /**
@@ -22,14 +21,6 @@ class UserRecommendation extends Model
     public function skinCondition()
     {
         return $this->belongsTo(SkinCondition::class, 'condition_id');
-    }
-
-    /**
-     * Relasi ke model Product.
-     */
-    public function product()
-    {
-        return $this->belongsTo(Product::class, 'product_id');
     }
 
     /**

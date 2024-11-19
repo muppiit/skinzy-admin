@@ -3,14 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\SkinCondition;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage; // Pastikan sudah di-import
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::all(); // Ambil semua produk dari database
+        $products = Product::with('skinCondition')->get(); // Ambil produk beserta skin condition terkait
         return view('products.index', compact('products'));
     }
 
@@ -19,7 +20,8 @@ class ProductController extends Controller
      */
     public function create()
     {
-        return view('products.create'); // Tampilkan form create
+        $skinConditions = SkinCondition::all(); // Ambil semua skin condition
+        return view('products.create', compact('skinConditions')); // Kirim ke view
     }
 
     /**
@@ -34,11 +36,12 @@ class ProductController extends Controller
             'product_image' => 'required|image|mimes:jpg,png,jpeg|max:2048',
             'price' => 'required|numeric',
             'stok' => 'required|integer',
+            'condition_id' => 'nullable|exists:skin_conditions,condition_id', // Validasi skin condition
         ]);
 
         // Upload gambar menggunakan Storage
+        $imagePath = null;
         if ($request->hasFile('product_image')) {
-            // Simpan gambar di storage dan dapatkan path-nya
             $imagePath = $request->file('product_image')->store('images', 'public');
         }
 
@@ -46,9 +49,10 @@ class ProductController extends Controller
         Product::create([
             'product_name' => $request->product_name,
             'description' => $request->description,
-            'product_image' => $imagePath, // Simpan path gambar
+            'product_image' => $imagePath,
             'price' => $request->price,
             'stok' => $request->stok,
+            'condition_id' => $request->condition_id, // Simpan skin condition terkait
         ]);
 
         return redirect()->route('products.index')->with('success', 'Product created successfully.');
@@ -59,8 +63,9 @@ class ProductController extends Controller
      */
     public function edit($product_id)
     {
-        $product = Product::findOrFail($product_id); // Ambil produk berdasarkan ID
-        return view('products.edit', compact('product')); // Tampilkan form edit
+        $product = Product::findOrFail($product_id);
+        $skinConditions = SkinCondition::all(); // Ambil semua skin condition
+        return view('products.edit', compact('product', 'skinConditions')); // Kirim data ke view
     }
 
     /**
@@ -74,20 +79,18 @@ class ProductController extends Controller
             'description' => 'required',
             'price' => 'required|numeric',
             'stok' => 'required|integer',
+            'condition_id' => 'nullable|exists:skin_conditions,condition_id', // Validasi skin condition
         ]);
 
         $product = Product::findOrFail($product_id);
 
         // Cek apakah ada gambar yang diupload
         if ($request->hasFile('product_image')) {
-            // Hapus gambar lama jika ada
             if ($product->product_image && Storage::exists('public/' . $product->product_image)) {
                 Storage::delete('public/' . $product->product_image);
             }
-
-            // Simpan gambar baru di storage
             $imagePath = $request->file('product_image')->store('images', 'public');
-            $product->product_image = $imagePath; // Update gambar
+            $product->product_image = $imagePath;
         }
 
         // Update produk
@@ -96,6 +99,7 @@ class ProductController extends Controller
             'description' => $request->description,
             'price' => $request->price,
             'stok' => $request->stok,
+            'condition_id' => $request->condition_id, // Update skin condition terkait
         ]);
 
         return redirect()->route('products.index')->with('success', 'Product updated successfully.');
@@ -108,12 +112,11 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($product_id);
 
-        // Hapus gambar terkait produk jika ada
         if ($product->product_image && Storage::exists('public/' . $product->product_image)) {
             Storage::delete('public/' . $product->product_image);
         }
 
-        $product->delete(); // Hapus produk
+        $product->delete();
 
         return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
     }

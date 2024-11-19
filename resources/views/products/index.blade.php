@@ -4,22 +4,6 @@
 
 @include('layouts.sidebar')
 
-<section class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1>Product List</h1>
-            </div>
-            <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Home</a></li>
-                    <li class="breadcrumb-item active">Product List</li>
-                </ol>
-            </div>
-        </div>
-    </div><!-- /.container-fluid -->
-</section>
-
 <!-- Main content -->
 <section class="content">
 
@@ -42,6 +26,7 @@
                                 <th>Description</th>
                                 <th>Price</th>
                                 <th>Stock</th>
+                                <th>Skin Condition</th>
                                 <th>Image</th>
                                 <th>Actions</th>
                             </tr>
@@ -54,6 +39,13 @@
                                     <td>{{ $product->description }}</td>
                                     <td>${{ $product->price }}</td>
                                     <td>{{ $product->stok }}</td>
+                                    <td>
+                                        @if ($product->skinCondition)
+                                            {{ $product->skinCondition->condition_name }}
+                                        @else
+                                            Not Set
+                                        @endif
+                                    </td>
                                     <td>
                                         <!-- Display product image -->
                                         <img src="{{ asset('storage/' . $product->product_image) }}" alt="{{ $product->product_name }}" style="max-width: 100px; height: auto;">

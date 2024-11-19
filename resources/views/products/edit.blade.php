@@ -8,7 +8,7 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1>Create New Product</h1>
+                <h1>Edit Product</h1>
             </div>
         </div>
     </div><!-- /.container-fluid -->
@@ -24,11 +24,11 @@
                 @method('PUT')
                 <div class="form-group">
                     <label for="product_name">Product Name:</label>
-                    <input type="text" name="product_name" id="product_name" class="form-control" value="{{ $product->product_name }}" required>
+                    <input type="text" name="product_name" id="product_name" class="form-control" value="{{ old('product_name', $product->product_name) }}" required>
                 </div>
                 <div class="form-group">
                     <label for="description">Description:</label>
-                    <textarea name="description" id="description" class="form-control" rows="3" required>{{ $product->description }}</textarea>
+                    <textarea name="description" id="description" class="form-control" rows="3" required>{{ old('description', $product->description) }}</textarea>
                 </div>
                 <div class="form-group">
                     <label for="product_image">Product Image:</label>
@@ -39,12 +39,27 @@
                 </div>
                 <div class="form-group">
                     <label for="price">Price:</label>
-                    <input type="number" name="price" id="price" class="form-control" value="{{ $product->price }}" required>
+                    <input type="number" name="price" id="price" class="form-control" value="{{ old('price', $product->price) }}" required>
                 </div>
                 <div class="form-group">
                     <label for="stok">Stock:</label>
-                    <input type="number" name="stok" id="stok" class="form-control" value="{{ $product->stok }}" required>
+                    <input type="number" name="stok" id="stok" class="form-control" value="{{ old('stok', $product->stok) }}" required>
                 </div>
+
+                <!-- Skin Condition Dropdown -->
+                <div class="form-group">
+                    <label for="skin_condition_id">Skin Condition:</label>
+                    <select name="condition_id" id="skin_condition_id" class="form-control" required>
+                        <option value="">Select Skin Condition</option>
+                        @foreach($skinConditions as $condition)
+                            <option value="{{ $condition->condition_id }}" 
+                                @if ($product->skinCondition && $product->skinCondition->condition_id == $condition->condition_id) selected @endif>
+                                {{ $condition->condition_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <button type="submit" class="btn btn-success">Update Product</button>
                 <a href="{{ route('products.index') }}" class="btn btn-secondary">Back to List</a>
             </form>

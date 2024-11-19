@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RegisterController;
 use App\Http\Controllers\Api\SkinConditionController;
+use App\Http\Controllers\Api\SkinpediaController;
 use App\Http\Controllers\Api\TreatmentController;
 use App\Http\Controllers\Api\UserController;
 
@@ -34,6 +35,7 @@ Route::get('/products', [ProductController::class, 'index']);
 Route::get('/brands', [ProductController::class, 'indexBrands']); // New route for distinct brands
 Route::get('/skin-conditions', [SkinConditionController::class, 'index']);
 Route::get('/treatments', [TreatmentController::class, 'index']);
+Route::get('/skinpedia', [SkinpediaController::class, 'index']);
 
 // Rute lain yang memerlukan autentikasi JWT
 Route::group(['middleware' => ['jwt.verify']], function() {
