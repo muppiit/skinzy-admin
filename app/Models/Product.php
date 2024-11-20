@@ -15,6 +15,7 @@ class Product extends Model
         'product_name',
         'description',
         'product_image',
+        'rating',
         'price',
         'stok',
         'condition_id', // Tambahkan condition_id ke atribut yang bisa diisi
