@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -43,7 +42,7 @@ class PredictController extends Controller
                 'file',
                 file_get_contents($image->getRealPath()),
                 $image->getClientOriginalName()
-                )->post('http://127.0.0.1:8000/predict');
+            )->post('http://127.0.0.1:8000/predict');
 
             // Log the response for debugging
             Log::info('Response from FastAPI POST: ' . $response->body());
@@ -55,10 +54,18 @@ class PredictController extends Controller
             $prediction = $response->json();
 
             // Log prediction for debugging
-            Log::info('Prediction Response: ', $prediction);
+            Log::info('Prediction Response: ', ['prediction' => $prediction]);
+
+            // Ensure prediction is an array and contains the expected keys
+            if (is_array($prediction) && isset($prediction['class'], $prediction['confidence'])) {
+                $predictedClass = $prediction['class'];
+                $confidence = $prediction['confidence'];
+            } else {
+                throw new \Exception('Invalid prediction response format');
+            }
 
             // Map prediction to skin condition
-            $skinCondition = $this->getSkinCondition($prediction);
+            $skinCondition = $this->getSkinCondition($predictedClass);
 
             // Save recommended product to database
             $recommendedProduct = Product::where('rating', '>=', 4)
@@ -105,6 +112,10 @@ class PredictController extends Controller
                     'treatment' => [
                         'deskripsi_treatment' => $treatment->deskripsi_treatment,
                     ],
+                    'prediction' => [
+                        'class' => $predictedClass,
+                        'confidence' => $confidence,
+                    ],
                 ]
             ]);
         } catch (\Exception $e) {
@@ -115,7 +126,7 @@ class PredictController extends Controller
     }
 
     // Helper function to map prediction to skin condition
-    private function getSkinCondition($prediction)
+    private function getSkinCondition($predictedClass)
     {
         $conditionMapping = [
             0 => 'Rendah',
@@ -124,7 +135,7 @@ class PredictController extends Controller
             3 => 'Sangat Parah',
         ];
 
-        $conditionName = $conditionMapping[$prediction['class']] ?? 'Sedang';
+        $conditionName = $conditionMapping[$predictedClass] ?? 'Sedang';
 
         // Log condition name to verify
         Log::info('Skin Condition: ' . $conditionName);
