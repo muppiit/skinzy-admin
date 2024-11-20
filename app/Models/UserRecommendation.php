@@ -13,6 +13,7 @@ class UserRecommendation extends Model
 
     protected $fillable = [
         'condition_id',
+        // 'product_id',
     ];
 
     /**

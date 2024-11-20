@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\PredictController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\LoginController;
@@ -29,6 +30,8 @@ Route::middleware('auth:api')->get('/user/profile', [UserController::class, 'pro
 Route::middleware('auth:api')->get('/user/profile-info', [UserController::class, 'getProfileInfo']);
 Route::middleware('auth:api')->put('/user/update', [UserController::class, 'update']);
 Route::post('/user/update-profile-image', [UserController::class, 'updateProfileImage'])->middleware('auth:api');
+
+Route::post('/analyze-skin', [PredictController::class, 'analyze']);
 
 Route::get('/user/history', [UserController::class, 'getUserHistory']);
 Route::get('/products', [ProductController::class, 'index']);
