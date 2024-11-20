@@ -15,16 +15,13 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class PredictController extends Controller
 {
-    // Handle POST request
     public function analyze(Request $request)
     {
-        // Validate the image input
         $request->validate([
             'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         try {
-            // Authenticate the user using JWT Bearer token
             $user = JWTAuth::parseToken()->authenticate();
 
             if (!$user) {
@@ -44,7 +41,6 @@ class PredictController extends Controller
                 $image->getClientOriginalName()
             )->post('http://127.0.0.1:8000/predict');
 
-            // Log the response for debugging
             Log::info('Response from FastAPI POST: ' . $response->body());
 
             if ($response->failed()) {
@@ -53,10 +49,8 @@ class PredictController extends Controller
 
             $prediction = $response->json();
 
-            // Log prediction for debugging
             Log::info('Prediction Response: ', ['prediction' => $prediction]);
 
-            // Ensure prediction is an array and contains the expected keys
             if (is_array($prediction) && isset($prediction['class'], $prediction['confidence'])) {
                 $predictedClass = $prediction['class'];
                 $confidence = $prediction['confidence'];
@@ -85,7 +79,6 @@ class PredictController extends Controller
                 'recommendation_id' => $userRecommendation->recommendation_id,
             ]);
 
-            // Retrieve treatment details
             $treatment = Treatment::find($skinCondition->id_treatment);
 
             DB::commit();
@@ -125,7 +118,6 @@ class PredictController extends Controller
         }
     }
 
-    // Helper function to map prediction to skin condition
     private function getSkinCondition($predictedClass)
     {
         $conditionMapping = [
@@ -137,9 +129,8 @@ class PredictController extends Controller
 
         $conditionName = $conditionMapping[$predictedClass] ?? 'Sedang';
 
-        // Log condition name to verify
         Log::info('Skin Condition: ' . $conditionName);
 
-        return SkinCondition::where('condition_name', $conditionName)->firstOrFail();
+        return SkinCondition::where('condition_id', $predictedClass+1)->firstOrFail();
     }
 }
