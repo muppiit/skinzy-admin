@@ -36,6 +36,6 @@ class SkinCondition extends Model
     // Model SkinCondition
     public function products()
     {
-        return $this->hasMany(Product::class);
+        return $this->hasMany(Product::class, 'condition_id');
     }
 }

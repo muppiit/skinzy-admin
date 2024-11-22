@@ -135,9 +135,12 @@ class UserController extends Controller
         $user = $this->getAuthenticatedUser();
     
         // Fetch the user's history along with the related recommendations
-        $userHistories = UserHistory::with('recommendation.skinCondition', 'recommendation.product')
-            ->where('user_id', $user->id)
-            ->get();
+        $userHistories = UserHistory::with([
+            'recommendation.skinCondition',
+            'recommendation.condition.products'  // Add this line to eager load products
+        ])
+        ->where('user_id', $user->id)
+        ->get();
     
         // Check if there are any histories
         if ($userHistories->isEmpty()) {

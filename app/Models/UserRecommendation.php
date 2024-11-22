@@ -23,7 +23,10 @@ class UserRecommendation extends Model
     {
         return $this->belongsTo(SkinCondition::class, 'condition_id');
     }
-
+    public function condition()
+    {
+        return $this->belongsTo(SkinCondition::class, 'condition_id');
+    }
     /**
      * Relasi ke model UserHistory.
      */
