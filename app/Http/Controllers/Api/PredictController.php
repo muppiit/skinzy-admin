@@ -12,45 +12,43 @@ use App\Models\UserRecommendation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class PredictController extends Controller
 {
     public function analyze(Request $request)
     {
+        // Validasi input image
         $request->validate([
             'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         try {
+            // Autentikasi user dengan JWT
             $user = JWTAuth::parseToken()->authenticate();
-
             if (!$user) {
                 return response()->json(['success' => false, 'message' => 'User not authenticated.'], 401);
             }
 
             DB::beginTransaction();
 
-            // Upload image
+            // Upload gambar ke Cloudinary
             $image = $request->file('image');
-            $imagePath = $image->store('scan_images', 'public');
+            $uploadedFileUrl = Cloudinary::upload($image->getRealPath(), ['folder' => 'scan-images'])->getSecurePath();
 
-            // Send to FastAPI for prediction
-            $response = Http::attach(
-                'file',
-                file_get_contents($image->getRealPath()),
-                $image->getClientOriginalName()
-            )->post('http://127.0.0.1:8000/predict');
+            // Kirim URL gambar ke FastAPI untuk prediksi
+            $response = Http::post('http://127.0.0.1:8000/predict', [
+                'image_url' => $uploadedFileUrl
+            ]);
 
-            Log::info('Response from FastAPI POST: ' . $response->body());
-
+            // Tangani response error dari FastAPI
             if ($response->failed()) {
+                Log::error('FastAPI Error Response: ' . $response->body());
                 throw new \Exception('FastAPI Prediction Failed: ' . $response->body());
             }
 
+            // Ambil hasil prediksi dari FastAPI
             $prediction = $response->json();
-
-            Log::info('Prediction Response: ', ['prediction' => $prediction]);
-
             if (is_array($prediction) && isset($prediction['class'], $prediction['confidence'])) {
                 $predictedClass = $prediction['class'];
                 $confidence = $prediction['confidence'];
@@ -58,27 +56,28 @@ class PredictController extends Controller
                 throw new \Exception('Invalid prediction response format');
             }
 
-            // Map prediction to skin condition
+            // Mapping prediksi ke kondisi kulit
             $skinCondition = $this->getSkinCondition($predictedClass);
 
-            // Save recommended product to database
+            // Pilih produk rekomendasi secara acak
             $recommendedProduct = Product::where('rating', '>=', 4)
                 ->inRandomOrder()
                 ->firstOrFail();
 
+            // Simpan data rekomendasi
             $userRecommendation = UserRecommendation::create([
                 'condition_id' => $skinCondition->condition_id,
-                // 'product_id' => $recommendedProduct->product_id,
             ]);
 
-            // Save user history
+            // Simpan riwayat pengguna
             $userHistory = UserHistory::create([
                 'user_id' => $user->id,
-                'gambar_scan' => $imagePath,
+                'gambar_scan' => $uploadedFileUrl,
                 'detection_date' => now(),
                 'recommendation_id' => $userRecommendation->recommendation_id,
             ]);
 
+            // Ambil informasi treatment dari kondisi kulit
             $treatment = Treatment::find($skinCondition->id_treatment);
 
             DB::commit();
@@ -128,9 +127,6 @@ class PredictController extends Controller
         ];
 
         $conditionName = $conditionMapping[$predictedClass] ?? 'Sedang';
-
-        Log::info('Skin Condition: ' . $conditionName);
-
-        return SkinCondition::where('condition_id', $predictedClass+1)->firstOrFail();
+        return SkinCondition::where('condition_id', $predictedClass + 1)->firstOrFail();
     }
 }
