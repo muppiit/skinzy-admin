@@ -59,10 +59,19 @@ class PredictController extends Controller
             // Mapping prediksi ke kondisi kulit
             $skinCondition = $this->getSkinCondition($predictedClass);
 
-            // Pilih produk rekomendasi secara acak
-            $recommendedProduct = Product::where('rating', '>=', 4)
-                ->inRandomOrder()
-                ->firstOrFail();
+            // Memanggil semua produk dengan condition_id yang sama
+            $recommendedProducts = Product::where('condition_id', '=', $predictedClass + 1)->get();
+
+            // Map produk ke dalam format yang diinginkan untuk respons
+            $productsArray = $recommendedProducts->map(function ($product) {
+                return [
+                    'product_name' => $product->product_name,
+                    'product_image' => $product->product_image,
+                    'description' => $product->description,
+                    'price' => $product->price,
+                    'rating' => $product->rating,
+                ];
+            });
 
             // Simpan data rekomendasi
             $userRecommendation = UserRecommendation::create([
@@ -95,12 +104,7 @@ class PredictController extends Controller
                         'condition_name' => $skinCondition->condition_name,
                         'description' => $skinCondition->description,
                     ],
-                    'product' => [
-                        'product_name' => $recommendedProduct->product_name,
-                        'description' => $recommendedProduct->description,
-                        'price' => $recommendedProduct->price,
-                        'rating' => $recommendedProduct->rating,
-                    ],
+                    'products' => $productsArray,  // Mengirim produk yang sudah dipetakan
                     'treatment' => [
                         'deskripsi_treatment' => $treatment->deskripsi_treatment,
                     ],
