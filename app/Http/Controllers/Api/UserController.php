@@ -137,7 +137,8 @@ class UserController extends Controller
         // Fetch the user's history along with the related recommendations
         $userHistories = UserHistory::with([
             'recommendation.skinCondition',
-            'recommendation.condition.products'  // Add this line to eager load products
+            'recommendation.condition.products',  // Add this line to eager load products
+            'recommendation.condition.treatment'  // Add this line to eager load products
         ])
         ->where('user_id', $user->id)
         ->get();
