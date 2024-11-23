@@ -37,7 +37,7 @@ class PredictController extends Controller
             $uploadedFileUrl = Cloudinary::upload($image->getRealPath(), ['folder' => 'scan-images'])->getSecurePath();
 
             // Kirim URL gambar ke FastAPI untuk prediksi
-            $response = Http::post('http://127.0.0.1:8000/predict', [
+            $response = Http::post('https://da2f22ff2fc11c89a42512ef2271a602.serveo.net/predict', [
                 'image_url' => $uploadedFileUrl
             ]);
 
