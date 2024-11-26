@@ -28,6 +28,7 @@ class ProductController extends Controller
                 'product_image' => $product->product_image,
                 'price' => $product->price,
                 'stok' => $product->stok,
+                'rating' => $product->rating,
                 'condition_id' => $product->skinCondition ? $product->skinCondition->condition_id : null,
                 'condition_name' => $product->skinCondition ? $product->skinCondition->condition_name : null,
             ];
@@ -64,6 +65,8 @@ class ProductController extends Controller
                 'product_image' => $product->product_image,
                 'price' => $product->price,
                 'stok' => $product->stok,
+                'rating' => $product->rating,
+
                 'condition_id' => $product->skinCondition ? $product->skinCondition->condition_id : null,
                 'condition_name' => $product->skinCondition ? $product->skinCondition->condition_name : null,
             ];
