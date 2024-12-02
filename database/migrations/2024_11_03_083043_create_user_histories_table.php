@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id('history_id'); // Primary key untuk tabel user_histories
             $table->foreignId('user_id')->constrained('users', 'id')->onDelete('cascade');
             $table->string('gambar_scan'); // Kolom untuk menyimpan path gambar hasil scan
+            $table->string('gambar_scan_predicted'); // Kolom untuk menyimpan path gambar hasil scan
             $table->date('detection_date'); // Kolom untuk tanggal scan
             $table->foreignId('recommendation_id')->constrained('user_recommendations', 'recommendation_id')->onDelete('cascade');
             $table->timestamps(); // Kolom created_at dan updated_at otomatis

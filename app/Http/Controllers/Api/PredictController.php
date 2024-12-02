@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -11,82 +12,70 @@ use App\Models\Treatment;
 use App\Models\UserRecommendation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Tymon\JWTAuth\Facades\JWTAuth;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Auth;
 
 class PredictController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth:api');
+    }
+
     public function analyze(Request $request)
     {
-        // Validasi input image
         $request->validate([
             'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         try {
-            // Autentikasi user dengan JWT
-            $user = JWTAuth::parseToken()->authenticate();
+            $user = Auth::user();
             if (!$user) {
-                return response()->json(['success' => false, 'message' => 'User not authenticated.'], 401);
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
             }
 
             DB::beginTransaction();
 
-            // Upload gambar ke Cloudinary
             $image = $request->file('image');
             $uploadedFileUrl = Cloudinary::upload($image->getRealPath(), ['folder' => 'scan-images'])->getSecurePath();
 
-            // Kirim URL gambar ke FastAPI untuk prediksi
-            $response = Http::post('https://da2f22ff2fc11c89a42512ef2271a602.serveo.net/predict', [
+            $response = Http::post('http://127.0.0.1:8000/predict', [
                 'image_url' => $uploadedFileUrl
             ]);
 
-            // Tangani response error dari FastAPI
             if ($response->failed()) {
-                Log::error('FastAPI Error Response: ' . $response->body());
                 throw new \Exception('FastAPI Prediction Failed: ' . $response->body());
             }
 
-            // Ambil hasil prediksi dari FastAPI
             $prediction = $response->json();
-            if (is_array($prediction) && isset($prediction['class'], $prediction['confidence'])) {
-                $predictedClass = $prediction['class'];
-                $confidence = $prediction['confidence'];
-            } else {
+            if (!isset($prediction['acne_count'], $prediction['avg_confidence'], $prediction['condition'], $prediction['predicted_url'], $prediction['boxes'])) {
                 throw new \Exception('Invalid prediction response format');
             }
 
-            // Mapping prediksi ke kondisi kulit
-            $skinCondition = $this->getSkinCondition($predictedClass);
+            $skinCondition = SkinCondition::where('condition_name', $prediction['condition'])->firstOrFail();
+            $recommendedProducts = Product::where('condition_id', $skinCondition->condition_id)->get();
+            
+            $productsArray = $recommendedProducts->map(fn($product) => [
+                'product_name' => $product->product_name,
+                'product_image' => $product->product_image,
+                'description' => $product->description,
+                'price' => $product->price,
+                'rating' => $product->rating,
+            ]);
 
-            // Memanggil semua produk dengan condition_id yang sama
-            $recommendedProducts = Product::where('condition_id', '=', $predictedClass + 1)->get();
-
-            // Map produk ke dalam format yang diinginkan untuk respons
-            $productsArray = $recommendedProducts->map(function ($product) {
-                return [
-                    'product_name' => $product->product_name,
-                    'product_image' => $product->product_image,
-                    'description' => $product->description,
-                    'price' => $product->price,
-                    'rating' => $product->rating,
-                ];
-            });
-
-            // Simpan data rekomendasi
             $userRecommendation = UserRecommendation::create([
                 'condition_id' => $skinCondition->condition_id,
             ]);
 
-            // Simpan riwayat pengguna
             $userHistory = UserHistory::create([
                 'user_id' => $user->id,
                 'gambar_scan' => $uploadedFileUrl,
+                'gambar_scan_predicted' => $prediction['predicted_url'],
                 'detection_date' => now(),
                 'recommendation_id' => $userRecommendation->recommendation_id,
+                'bounding_boxes' => json_encode($prediction['boxes'])
             ]);
 
-            // Ambil informasi treatment dari kondisi kulit
             $treatment = Treatment::find($skinCondition->id_treatment);
 
             DB::commit();
@@ -97,40 +86,27 @@ class PredictController extends Controller
                     'history' => [
                         'history_id' => $userHistory->history_id,
                         'gambar_scan' => $userHistory->gambar_scan,
+                        'gambar_scan_predicted' => $userHistory->gambar_scan_predicted,
                         'detection_date' => $userHistory->detection_date,
                         'recommendation_id' => $userHistory->recommendation_id,
+                        'bounding_boxes' => json_decode($userHistory->bounding_boxes)
                     ],
                     'condition' => [
                         'condition_name' => $skinCondition->condition_name,
                         'description' => $skinCondition->description,
                     ],
-                    'products' => $productsArray,  // Mengirim produk yang sudah dipetakan
+                    'products' => $productsArray,
                     'treatment' => [
                         'deskripsi_treatment' => $treatment->deskripsi_treatment,
                     ],
-                    'prediction' => [
-                        'class' => $predictedClass,
-                        'confidence' => $confidence,
-                    ],
+                    'prediction' => $prediction
                 ]
             ]);
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Skin Analysis Error: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
-    }
-
-    private function getSkinCondition($predictedClass)
-    {
-        $conditionMapping = [
-            0 => 'Rendah',
-            1 => 'Sedang',
-            2 => 'Parah',
-            3 => 'Sangat Parah',
-        ];
-
-        $conditionName = $conditionMapping[$predictedClass] ?? 'Sedang';
-        return SkinCondition::where('condition_id', $predictedClass + 1)->firstOrFail();
     }
 }

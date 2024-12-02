@@ -13,6 +13,7 @@ class UserHistory extends Model
     protected $fillable = [
         'user_id',
         'gambar_scan',
+        'gambar_scan_predicted',
         'detection_date',
         'recommendation_id',
     ];
