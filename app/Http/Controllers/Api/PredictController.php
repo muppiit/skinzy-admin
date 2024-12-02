@@ -89,7 +89,7 @@ class PredictController extends Controller
                         'gambar_scan_predicted' => $userHistory->gambar_scan_predicted,
                         'detection_date' => $userHistory->detection_date,
                         'recommendation_id' => $userHistory->recommendation_id,
-                        'bounding_boxes' => json_decode($userHistory->bounding_boxes)
+                        // 'bounding_boxes' => json_decode($userHistory->bounding_boxes) # gak dipake
                     ],
                     'condition' => [
                         'condition_name' => $skinCondition->condition_name,
