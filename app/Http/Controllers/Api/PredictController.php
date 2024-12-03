@@ -13,7 +13,7 @@ use App\Models\UserRecommendation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 class PredictController extends Controller
 {
@@ -54,7 +54,7 @@ class PredictController extends Controller
 
             $skinCondition = SkinCondition::where('condition_name', $prediction['condition'])->firstOrFail();
             $recommendedProducts = Product::where('condition_id', $skinCondition->condition_id)->get();
-            
+
             $productsArray = $recommendedProducts->map(fn($product) => [
                 'product_name' => $product->product_name,
                 'product_image' => $product->product_image,
@@ -102,7 +102,6 @@ class PredictController extends Controller
                     'prediction' => $prediction
                 ]
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Skin Analysis Error: ' . $e->getMessage());
