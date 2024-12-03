@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\SkinCondition;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ProductController extends Controller
 {
@@ -27,6 +28,7 @@ class ProductController extends Controller
     /**
      * Store a newly created product in storage.
      */
+
     public function store(Request $request)
     {
         // Validasi data
@@ -36,13 +38,17 @@ class ProductController extends Controller
             'product_image' => 'required|image|mimes:jpg,png,jpeg|max:2048',
             'price' => 'required|numeric',
             'stok' => 'required|integer',
-            'condition_id' => 'nullable|exists:skin_conditions,condition_id', // Validasi skin condition
+            'condition_id' => 'nullable|exists:skin_conditions,condition_id',
         ]);
 
-        // Upload gambar menggunakan Storage
         $imagePath = null;
+
+        // Upload gambar ke Cloudinary
         if ($request->hasFile('product_image')) {
-            $imagePath = $request->file('product_image')->store('images', 'public');
+            $uploadedFileUrl = Cloudinary::upload($request->file('product_image')->getRealPath(), [
+                'folder' => 'product-images',
+            ])->getSecurePath();
+            $imagePath = $uploadedFileUrl;
         }
 
         // Simpan produk
@@ -52,11 +58,12 @@ class ProductController extends Controller
             'product_image' => $imagePath,
             'price' => $request->price,
             'stok' => $request->stok,
-            'condition_id' => $request->condition_id, // Simpan skin condition terkait
+            'condition_id' => $request->condition_id,
         ]);
 
         return redirect()->route('products.index')->with('success', 'Product created successfully.');
     }
+
 
     /**
      * Show the form for editing the specified product.
@@ -73,37 +80,41 @@ class ProductController extends Controller
      */
     public function update(Request $request, $product_id)
     {
-        // Validasi data
         $request->validate([
             'product_name' => 'required',
             'description' => 'required',
             'price' => 'required|numeric',
             'stok' => 'required|integer',
-            'condition_id' => 'nullable|exists:skin_conditions,condition_id', // Validasi skin condition
+            'condition_id' => 'nullable|exists:skin_conditions,condition_id',
         ]);
 
         $product = Product::findOrFail($product_id);
 
-        // Cek apakah ada gambar yang diupload
+        // Upload gambar baru ke Cloudinary jika ada
         if ($request->hasFile('product_image')) {
-            if ($product->product_image && Storage::exists('public/' . $product->product_image)) {
-                Storage::delete('public/' . $product->product_image);
+            // Hapus gambar lama dari Cloudinary jika ada
+            if ($product->product_image) {
+                $publicId = pathinfo($product->product_image)['filename']; // Mendapatkan public ID dari URL
+                Cloudinary::destroy('product-images/' . $publicId);
             }
-            $imagePath = $request->file('product_image')->store('images', 'public');
-            $product->product_image = $imagePath;
+
+            $uploadedFileUrl = Cloudinary::upload($request->file('product_image')->getRealPath(), [
+                'folder' => 'product-images',
+            ])->getSecurePath();
+            $product->product_image = $uploadedFileUrl;
         }
 
-        // Update produk
         $product->update([
             'product_name' => $request->product_name,
             'description' => $request->description,
             'price' => $request->price,
             'stok' => $request->stok,
-            'condition_id' => $request->condition_id, // Update skin condition terkait
+            'condition_id' => $request->condition_id,
         ]);
 
         return redirect()->route('products.index')->with('success', 'Product updated successfully.');
     }
+
 
     /**
      * Remove the specified product from storage.

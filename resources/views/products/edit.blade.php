@@ -34,7 +34,7 @@
                     <label for="product_image">Product Image:</label>
                     <input type="file" name="product_image" id="product_image" class="form-control">
                     @if ($product->product_image)
-                        <img src="{{ asset('storage/' . $product->product_image) }}" alt="Product Image" class="img-thumbnail mt-2" width="100">
+                        <img src="{{ $product->product_image }}" alt="Product Image" class="img-thumbnail mt-2" width="100">
                     @endif
                 </div>
                 <div class="form-group">

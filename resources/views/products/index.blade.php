@@ -48,7 +48,7 @@
                                     </td>
                                     <td>
                                         <!-- Display product image -->
-                                        <img src="{{ asset('storage/' . $product->product_image) }}" alt="{{ $product->product_name }}" style="max-width: 100px; height: auto;">
+                                        <img src="{{ $product->product_image }}" alt="{{ $product->product_name }}" style="max-width: 100px; height: auto;">
                                     </td>
                                     <td>
                                         <a href="{{ route('products.edit', $product->product_id) }}" class="btn btn-warning">Edit</a>
