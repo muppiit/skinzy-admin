@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -60,39 +61,63 @@ class UserController extends Controller
 
     // Update profil pengguna
     public function update(Request $request)
-    {
-        $user = $this->getAuthenticatedUser();
+{
+    // Get the authenticated user
+    $user = $this->getAuthenticatedUser();
 
-        // Validasi input
-        $validator = $this->validateUserInput($request);
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 422);
-        }
-
-        // Update profil
-        $user->username = $request->username ?? $user->username;
-        $user->email = $request->email ?? $user->email;
-        $user->gender = $request->gender ?? $user->gender;
-        $user->age = $request->age ?? $user->age;
-        $user->level = $request->level ?? $user->level;
-        $user->phone_number = $request->phone_number ?? $user->phone_number;
-        $user->first_name = $request->first_name ?? $user->first_name;
-        $user->last_name = $request->last_name ?? $user->last_name;
-        $user->birth_date = $request->birth_date ?? $user->birth_date;
-
-        // Update password jika diisi
-        if ($request->filled('password')) {
-            $user->password = Hash::make($request->password);
-        }
-
-        // Simpan perubahan
-        $user->save();
-
-        return response()->json([
-            'message' => 'User profile updated successfully',
-            'user' => $user
-        ]);
+    // Validate input data
+    $validator = $this->validateUserInput($request);
+    if ($validator->fails()) {
+        return response()->json(['error' => $validator->errors()], 422);
     }
+
+    // Validate password if provided
+    if ($request->filled('password') && strlen($request->password) < 8) {
+        return response()->json(['error' => 'Password must be at least 8 characters long.'], 422);
+    }
+
+    // Update profile fields
+    $user->username = $request->username ?? $user->username;
+    $user->email = $request->email ?? $user->email;
+
+    // Ensure email is unique if it's being updated
+    if ($request->filled('email') && $request->email !== $user->email) {
+        $existingUser = User::where('email', $request->email)->first();
+        if ($existingUser) {
+            return response()->json(['error' => 'Email is already taken.'], 422);
+        }
+    }
+
+    $user->gender = $request->gender ?? $user->gender;
+    $user->age = $request->age ?? $user->age;
+    $user->level = $request->level ?? $user->level;
+    $user->phone_number = $request->phone_number ?? $user->phone_number;
+    $user->first_name = $request->first_name ?? $user->first_name;
+    $user->last_name = $request->last_name ?? $user->last_name;
+
+    // Update birth_date if provided and valid
+    if ($request->filled('birth_date')) {
+        try {
+            $user->birth_date = Carbon::createFromFormat('Y-m-d', $request->birth_date);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Invalid birth date format. Please use YYYY-MM-DD.'], 422);
+        }
+    }
+
+    // Update password if provided
+    if ($request->filled('password')) {
+        $user->password = Hash::make($request->password);
+    }
+
+    // Save the updated user data
+    $user->save();
+
+    return response()->json([
+        'message' => 'User profile updated successfully',
+        'user' => $user
+    ]);
+}
+
 
     // Update gambar profil pengguna
     public function updateProfileImage(Request $request)
