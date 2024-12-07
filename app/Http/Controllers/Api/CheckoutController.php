@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\SkincareCheckout;
 use App\Models\UserHistory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CheckoutController extends Controller
 {
@@ -70,5 +71,32 @@ class CheckoutController extends Controller
             'products' => $checkoutItems,
             'total_harga_checkout' => $totalHargaCheckout
         ], 201);
+    }
+
+    public function getSkincareCheckout(Request $request)
+    {
+        $userId = Auth::user()->id;
+
+        // Ambil semua history_id untuk user yang sedang login
+        $userHistoryIds = \App\Models\UserHistory::where('user_id', $userId)->pluck('history_id');
+
+        // Ambil semua checkout berdasarkan history_id yang cocok dengan user login dan join dengan tabel produk
+        $userCheckouts = \App\Models\SkincareCheckout::whereIn('id_history', $userHistoryIds)
+            ->join('products', 'skincare_checkout.id_history', '=', 'products.product_id')
+            ->select(
+                'skincare_checkout.id_checkout',
+                'skincare_checkout.id_history',
+                'skincare_checkout.quantity',
+                'products.product_id',
+                'products.product_name',
+                'products.product_image',
+                'skincare_checkout.total_harga'
+            )
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $userCheckouts
+        ]);
     }
 }

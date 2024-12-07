@@ -41,10 +41,11 @@ Route::get('/skin-conditions', [SkinConditionController::class, 'index']);
 Route::get('/treatments', [TreatmentController::class, 'index']);
 Route::get('/skinpedia', [SkinpediaController::class, 'index']);
 Route::post('/checkout', [CheckoutController::class, 'checkout']);
+Route::get('/skincare-checkouts', [CheckoutController::class, 'getSkincareCheckout'])->middleware('auth:api');
 
 // Rute lain yang memerlukan autentikasi JWT
-Route::group(['middleware' => ['jwt.verify']], function() {
-    Route::get('user', function() {
+Route::group(['middleware' => ['jwt.verify']], function () {
+    Route::get('user', function () {
         return auth()->user();
     });
 });

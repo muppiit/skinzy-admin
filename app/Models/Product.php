@@ -36,4 +36,6 @@ class Product extends Model
     {
         return $this->belongsTo(SkinCondition::class, 'condition_id', 'condition_id');
     }
+
+    
 }

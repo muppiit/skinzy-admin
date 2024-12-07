@@ -25,4 +25,6 @@ class SkincareCheckout extends Model
     {
         return $this->belongsTo(UserHistory::class, 'id_history', 'history_id');
     }
+
+    
 }
