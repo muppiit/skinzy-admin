@@ -90,7 +90,8 @@ class CheckoutController extends Controller
                 'products.product_id',
                 'products.product_name',
                 'products.product_image',
-                'skincare_checkout.total_harga'
+                'skincare_checkout.total_harga',
+                'users.address as user_address'
             )
             ->get();
 
