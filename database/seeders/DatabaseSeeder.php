@@ -17,6 +17,14 @@ class DatabaseSeeder extends Seeder
         $this->call(SkinConditionSeeder::class);
         $this->call(ProductSeeder::class);
         $this->call(SkinpediaSeeder::class);
+        $this->call(userRecomendation::class);
+        $this->call(TreatmentSeeder::class);
+        $this->call(UserHistorySeeder::class);
+        $this->call(SkincareCheckoutSeeder::class);
+
+
+
+
 
         // \App\Models\User::factory(10)->create();
 
