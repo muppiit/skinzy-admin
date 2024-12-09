@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\SkincareCheckout;
+use App\Models\User;
 use App\Models\UserHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,6 +24,17 @@ class CheckoutController extends Controller
 
         // Ambil data history yang dipilih
         $userHistory = UserHistory::find($validated['history_id']);
+
+        // Ambil informasi pengguna berdasarkan user_id dari user_history
+        $user = User::find($userHistory->user_id);
+
+        // Jika pengguna tidak ditemukan atau tidak memiliki alamat
+        if (!$user || !$user->address) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User address not found',
+            ], 400);
+        }
 
         // Inisialisasi total harga keseluruhan checkout
         $totalHargaCheckout = 0;
@@ -68,10 +80,12 @@ class CheckoutController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Checkout successful',
+            'address' => $user->address, // Sertakan alamat pengguna dalam respons
             'products' => $checkoutItems,
             'total_harga_checkout' => $totalHargaCheckout
         ], 201);
     }
+
 
     public function getSkincareCheckout(Request $request)
     {
@@ -91,7 +105,7 @@ class CheckoutController extends Controller
                 'products.product_name',
                 'products.product_image',
                 'skincare_checkout.total_harga',
-                'users.address as user_address'
+                'users.address as address'
             )
             ->get();
 

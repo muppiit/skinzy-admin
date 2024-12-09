@@ -27,6 +27,7 @@ class User extends Authenticatable implements JWTSubject // Ganti dari 'Users' k
         'profile_image',
         'gender',
         'age',
+        'address',
         'level',
     ];
 

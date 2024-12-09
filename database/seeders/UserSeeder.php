@@ -25,6 +25,7 @@ class UserSeeder extends Seeder
             'first_name' => 'Admin',
             'last_name' => 'User',
             'birth_date' => '1993-01-01',
+            'address' => '123 Admin Street, Admin City, Country',
         ]);
 
         User::create([
@@ -39,6 +40,7 @@ class UserSeeder extends Seeder
             'first_name' => 'Regular',
             'last_name' => 'User',
             'birth_date' => '1998-02-15',
+            'address' => '456 User Avenue, User City, Country',
         ]);
     }
 }
