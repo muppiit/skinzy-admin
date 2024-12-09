@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 
 class CheckoutController extends Controller
 {
+    
     public function checkout(Request $request)
     {
         // Validasi input dari request
@@ -89,6 +90,9 @@ class CheckoutController extends Controller
 
     public function getSkincareCheckout(Request $request)
     {
+        \DB::enableQueryLog();
+        \Log::info(\DB::getQueryLog());
+
         $userId = Auth::user()->id;
 
         // Ambil semua history_id untuk user yang sedang login
