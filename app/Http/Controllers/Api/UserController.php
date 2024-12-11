@@ -187,4 +187,27 @@ class UserController extends Controller
             'data' => $userHistories
         ], 200);
     }
+    public function updateAddress(Request $request)
+    {
+        // Dapatkan pengguna yang sedang login
+        $user = $this->getAuthenticatedUser();
+
+        // Validasi input alamat
+        $validator = Validator::make($request->all(), [
+            'address' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        // Perbarui alamat pengguna
+        $user->address = $request->address;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Address updated successfully',
+            'user' => $user
+        ], 200);
+    }
 }

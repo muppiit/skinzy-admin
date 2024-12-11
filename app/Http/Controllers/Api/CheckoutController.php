@@ -10,6 +10,7 @@ use Illuminate\Validation\ValidationException;
 
 class CheckoutController extends Controller
 {
+    
     public function checkout(Request $request)
     {
         try {
@@ -80,48 +81,4 @@ class CheckoutController extends Controller
         }
     }
 
-    // public function getUserCheckouts()
-    // {
-    //     try {
-    //         // Ambil ID user yang sedang login
-    //         $user = auth()->user();
-
-    //         // Ambil data checkout hanya untuk user yang sedang login
-    //         $checkouts = SkincareCheckout::with('userHistory', 'userHistory.recommendation.skinCondition.products')
-    //             ->whereHas('userHistory', function ($query) use ($user) {
-    //                 $query->where('user_id', $user->id);
-    //             })
-    //             ->get();
-
-    //         // Proses data checkout
-    //         $result = $checkouts->map(function ($checkout) {
-    //             return [
-    //                 "id_checkout" => $checkout->id_checkout,
-    //                 "id_user" => $checkout->userHistory->user_id ?? null,
-    //                 "id_history" => $checkout->id_history,
-    //                 "quantity" => $checkout->quantity,
-    //                 "total_harga" => $checkout->total_harga,
-    //                 "products" => $checkout->userHistory->recommendation->skinCondition->products->map(function ($product) {
-    //                     return [
-    //                         "product_id" => $product->product_id,
-    //                         "product_name" => $product->product_name,
-    //                         "price" => $product->price,
-    //                     ];
-    //                 }),
-    //                 "created_at" => $checkout->created_at,
-    //             ];
-    //         });
-
-    //         return response()->json([
-    //             'status' => 'success',
-    //             'data' => $result,
-    //         ], 200);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'status' => 'error',
-    //             'message' => 'Terjadi kesalahan saat mengambil data checkout.',
-    //             'error' => $e->getMessage(),
-    //         ], 500);
-    //     }
-    // }
 }
