@@ -10,7 +10,7 @@ class Product extends Model
     use HasFactory;
 
     protected $primaryKey = 'product_id';
-    
+
     protected $fillable = [
         'product_name',
         'description',
@@ -37,5 +37,4 @@ class Product extends Model
         return $this->belongsTo(SkinCondition::class, 'condition_id', 'condition_id');
     }
 
-    
 }

@@ -27,4 +27,9 @@ class UserHistory extends Model
     {
         return $this->belongsTo(UserRecommendation::class, 'recommendation_id');
     }
+
+    public function checkouts()
+    {
+        return $this->hasMany(SkincareCheckout::class, 'id_history', 'history_id');
+    }
 }

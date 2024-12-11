@@ -21,7 +21,7 @@ class SkincareCheckout extends Model
         'total_harga',
     ];
 
-    public function history()
+    public function userHistory()
     {
         return $this->belongsTo(UserHistory::class, 'id_history', 'history_id');
     }
