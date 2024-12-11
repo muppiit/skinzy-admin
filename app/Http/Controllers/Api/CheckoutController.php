@@ -10,7 +10,7 @@ use Illuminate\Validation\ValidationException;
 
 class CheckoutController extends Controller
 {
-    
+
     public function checkout(Request $request)
     {
         try {
@@ -20,37 +20,37 @@ class CheckoutController extends Controller
             // Validasi input
             $validated = $request->validate([
                 'history_id' => 'required|exists:user_histories,history_id',
-                'products' => 'required|array',
-                'products.*.product_id' => 'required|exists:products,product_id',
-                'products.*.quantity' => 'required|integer|min:1'
+                'product_id' => 'required|exists:products,product_id',
+                'quantity' => 'required|integer|min:1'
             ]);
 
             $historyId = $validated['history_id'];
-            $products = $validated['products'];
+            $productId = $validated['product_id'];
+            $quantity = $validated['quantity'];
 
-            $totalHarga = 0;
-            $checkoutProducts = [];
+            // Mendapatkan data produk
+            $product = Product::findOrFail($productId);
 
-            // Loop melalui produk untuk menghitung total harga dan mempersiapkan data checkout
-            foreach ($products as $product) {
-                $productData = Product::findOrFail($product['product_id']);
-                $hargaDasar = $productData->price;
-                $jumlah = $product['quantity'];
-
-                $totalHarga += $hargaDasar * $jumlah;
-
-                $checkoutProducts[] = [
-                    'product_id' => $productData->product_id,
-                    'product_name' => $productData->product_name,
-                    'price' => $hargaDasar,
-                    'quantity' => $jumlah
-                ];
+            // Validasi stok produk
+            if ($product->stok < $quantity) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Stok produk tidak mencukupi.',
+                ], 422);
             }
+
+            // Hitung total harga
+            $totalHarga = $product->price * $quantity;
+
+            // Kurangi stok produk
+            $product->stok -= $quantity;
+            $product->save();
 
             // Membuat data checkout
             $checkout = SkincareCheckout::create([
                 'id_history' => $historyId,
-                'quantity' => array_sum(array_column($products, 'quantity')),
+                'product_id' => $productId,
+                'quantity' => $quantity,
                 'total_harga' => $totalHarga
             ]);
 
@@ -62,7 +62,12 @@ class CheckoutController extends Controller
                     'id_user' => $user->id,
                     'id_history' => $checkout->id_history,
                     'total_harga' => $checkout->total_harga,
-                    'products' => $checkoutProducts,
+                    'product' => [
+                        'product_id' => $product->product_id,
+                        'product_name' => $product->product_name,
+                        'price' => $product->price,
+                        'quantity' => $quantity
+                    ],
                     'created_at' => $checkout->created_at
                 ]
             ], 201);
@@ -81,4 +86,45 @@ class CheckoutController extends Controller
         }
     }
 
+    public function getUserCheckouts(Request $request)
+    {
+        try {
+            // Mendapatkan user yang sedang login berdasarkan JWT token
+            $user = auth()->user();
+
+            // Mengambil semua data checkout yang terkait dengan user dan memuat relasi produk
+            $checkouts = SkincareCheckout::with('product')  // Eager load the product relationship
+                ->whereHas('userHistory', function ($query) use ($user) {
+                    $query->where('user_id', $user->id);  // Pastikan hubungan 'user_id' pada tabel 'user_histories'
+                })
+                ->get();
+
+            // Menyusun respon dengan data checkout yang ditemukan
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Checkout history retrieved successfully.',
+                'data' => $checkouts->map(function ($checkout) {
+                    return [
+                        'id_checkout' => $checkout->id_checkout,
+                        'id_user' => $checkout->userHistory->user_id,  // Assuming 'user_id' exists in the user_histories table
+                        'id_history' => $checkout->id_history,
+                        'total_harga' => $checkout->total_harga,
+                        'product' => [
+                            'product_id' => $checkout->product->product_id,
+                            'product_name' => $checkout->product->product_name,
+                            'price' => $checkout->product->price,
+                            'quantity' => $checkout->quantity
+                        ],
+                        'created_at' => $checkout->created_at
+                    ];
+                })
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan saat mengambil riwayat checkout.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

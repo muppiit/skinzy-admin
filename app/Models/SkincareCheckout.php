@@ -17,6 +17,7 @@ class SkincareCheckout extends Model
 
     protected $fillable = [
         'id_history',
+        'product_id',
         'quantity',
         'total_harga',
     ];
@@ -24,6 +25,11 @@ class SkincareCheckout extends Model
     public function userHistory()
     {
         return $this->belongsTo(UserHistory::class, 'id_history', 'history_id');
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id', 'product_id'); // Relasi ke tabel products
     }
 
     

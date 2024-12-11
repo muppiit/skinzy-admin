@@ -14,12 +14,14 @@ class SkincareCheckoutSeeder extends Seeder
     {
         SkincareCheckout::create([
             'id_history' => 1, // Mengacu pada UserHistory dengan ID 1
+            'product_id' => 1,
             'quantity' => 2,
             'total_harga' => 500000, // Total harga dalam satuan tertentu (contoh: Rupiah)
         ]);
 
         SkincareCheckout::create([
             'id_history' => 2, // Mengacu pada UserHistory dengan ID 2
+            'product_id' => 2,
             'quantity' => 1,
             'total_harga' => 250000, // Total harga dalam satuan tertentu (contoh: Rupiah)
         ]);

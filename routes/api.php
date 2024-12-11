@@ -43,7 +43,7 @@ Route::get('/treatments', [TreatmentController::class, 'index']);
 Route::get('/skinpedia', [SkinpediaController::class, 'index']);
 Route::middleware(['auth:api'])->group(function () {
     Route::post('/checkout', [CheckoutController::class, 'checkout']);
-    // Route::get('/getCheckout', [CheckoutController::class, 'getUserCheckouts']);
+    Route::get('/getCheckout', [CheckoutController::class, 'getUserCheckouts']);
 });
 
 // Rute lain yang memerlukan autentikasi JWT
