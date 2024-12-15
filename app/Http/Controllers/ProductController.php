@@ -38,6 +38,7 @@ class ProductController extends Controller
             'product_image' => 'required|image|mimes:jpg,png,jpeg|max:2048',
             'price' => 'required|numeric',
             'stok' => 'required|integer',
+            'rating' => 'nullable|numeric|min:0|max:5',
             'condition_id' => 'nullable|exists:skin_conditions,condition_id',
         ]);
 
@@ -58,6 +59,7 @@ class ProductController extends Controller
             'product_image' => $imagePath,
             'price' => $request->price,
             'stok' => $request->stok,
+            'rating' => $request->rating,
             'condition_id' => $request->condition_id,
         ]);
 
@@ -85,6 +87,7 @@ class ProductController extends Controller
             'description' => 'required',
             'price' => 'required|numeric',
             'stok' => 'required|integer',
+            'rating' => 'nullable|numeric|min:0|max:5',
             'condition_id' => 'nullable|exists:skin_conditions,condition_id',
         ]);
 
@@ -109,12 +112,12 @@ class ProductController extends Controller
             'description' => $request->description,
             'price' => $request->price,
             'stok' => $request->stok,
+            'rating' => $request->rating,
             'condition_id' => $request->condition_id,
         ]);
 
         return redirect()->route('products.index')->with('success', 'Product updated successfully.');
     }
-
 
     /**
      * Remove the specified product from storage.
@@ -123,12 +126,37 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($product_id);
 
-        if ($product->product_image && Storage::exists('public/' . $product->product_image)) {
-            Storage::delete('public/' . $product->product_image);
+        // Hapus gambar dari Cloudinary jika ada
+        if ($product->product_image) {
+            // Mendapatkan public ID dari URL
+            $parsedUrl = parse_url($product->product_image);
+            $publicId = pathinfo($parsedUrl['path'], PATHINFO_FILENAME);
+
+            // Hapus gambar di folder Cloudinary
+            Cloudinary::destroy('product-images/' . $publicId);
         }
 
+        // Hapus data produk
         $product->delete();
 
         return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
     }
+
+
+
+    // /**
+    //  * Remove the specified product from storage.
+    //  */
+    // public function destroy($product_id)
+    // {
+    //     $product = Product::findOrFail($product_id);
+
+    //     if ($product->product_image && Storage::exists('public/' . $product->product_image)) {
+    //         Storage::delete('public/' . $product->product_image);
+    //     }
+
+    //     $product->delete();
+
+    //     return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
+    // }
 }
