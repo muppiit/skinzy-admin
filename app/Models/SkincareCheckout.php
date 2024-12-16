@@ -32,5 +32,5 @@ class SkincareCheckout extends Model
         return $this->belongsTo(Product::class, 'product_id', 'product_id'); // Relasi ke tabel products
     }
 
-    
+
 }
