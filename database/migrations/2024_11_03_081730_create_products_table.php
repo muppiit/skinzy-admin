@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('product_name'); // Kolom nama produk
             $table->text('description')->nullable(); // Kolom deskripsi produk, bisa kosong
             $table->string('product_image')->nullable(); // Kolom gambar produk, bisa kosong
-            $table->decimal('price', 10, 2); // Kolom harga produk dengan dua desimal
+            $table->decimal('price', 10, 0); // Kolom harga produk dengan dua desimal
             $table->integer('stok'); // Kolom stok produk
             $table->integer('rating'); // Kolom stok produk
             $table->timestamps(); // Kolom created_at dan updated_at otomatis

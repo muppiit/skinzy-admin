@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Skinpedia;
 use App\Models\SkinCondition;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class SkinpediaController extends Controller
 {
@@ -37,10 +37,14 @@ class SkinpediaController extends Controller
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Gambar opsional
         ]);
 
-        // Simpan gambar jika ada
         $imagePath = null;
+
+        // Upload gambar ke Cloudinary jika ada
         if ($request->hasFile('gambar')) {
-            $imagePath = $request->file('gambar')->store('images', 'public');
+            $uploadedFileUrl = Cloudinary::upload($request->file('gambar')->getRealPath(), [
+                'folder' => 'skinpedia-images',
+            ])->getSecurePath();
+            $imagePath = $uploadedFileUrl;
         }
 
         // Simpan Skinpedia ke database
@@ -79,12 +83,18 @@ class SkinpediaController extends Controller
 
         // Cek apakah ada gambar yang diupload
         if ($request->hasFile('gambar')) {
-            // Hapus gambar lama jika ada
-            if ($skinpedia->gambar && Storage::exists('public/' . $skinpedia->gambar)) {
-                Storage::delete('public/' . $skinpedia->gambar);
+            // Hapus gambar lama dari Cloudinary jika ada
+            if ($skinpedia->gambar) {
+                $parsedUrl = parse_url($skinpedia->gambar);
+                $publicId = pathinfo($parsedUrl['path'], PATHINFO_FILENAME);
+                Cloudinary::destroy('skinpedia-images/' . $publicId);
             }
-            $imagePath = $request->file('gambar')->store('images', 'public');
-            $skinpedia->gambar = $imagePath;
+
+            // Upload gambar baru ke Cloudinary
+            $uploadedFileUrl = Cloudinary::upload($request->file('gambar')->getRealPath(), [
+                'folder' => 'skinpedia-images',
+            ])->getSecurePath();
+            $skinpedia->gambar = $uploadedFileUrl;
         }
 
         // Update Skinpedia
@@ -104,11 +114,14 @@ class SkinpediaController extends Controller
     {
         $skinpedia = Skinpedia::findOrFail($id_skinpedia);
 
-        // Hapus gambar jika ada
-        if ($skinpedia->gambar && Storage::exists('public/' . $skinpedia->gambar)) {
-            Storage::delete('public/' . $skinpedia->gambar);
+        // Hapus gambar dari Cloudinary jika ada
+        if ($skinpedia->gambar) {
+            $parsedUrl = parse_url($skinpedia->gambar);
+            $publicId = pathinfo($parsedUrl['path'], PATHINFO_FILENAME);
+            Cloudinary::destroy('skinpedia-images/' . $publicId);
         }
 
+        // Hapus data dari database
         $skinpedia->delete();
 
         return redirect()->route('skinpedia.index')->with('success', 'Skinpedia deleted successfully.');

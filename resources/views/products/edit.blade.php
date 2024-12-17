@@ -46,6 +46,12 @@
                     <input type="number" name="stok" id="stok" class="form-control" value="{{ old('stok', $product->stok) }}" required>
                 </div>
 
+                <!-- Rating Input -->
+                <div class="form-group">
+                    <label for="rating">Rating:</label>
+                    <input type="number" name="rating" id="rating" class="form-control" min="0" max="5" step="0.1" value="{{ old('rating', $product->rating) }}" required>
+                </div>
+
                 <!-- Skin Condition Dropdown -->
                 <div class="form-group">
                     <label for="skin_condition_id">Skin Condition:</label>

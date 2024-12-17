@@ -35,14 +35,17 @@
                                     <td>{{ $skinpedia->deskripsi }}</td>
                                     <td>
                                         @if ($skinpedia->gambar)
-                                            <img src="{{ asset('storage/' . $skinpedia->gambar) }}" alt="{{ $skinpedia->judul }}" style="max-width: 100px; height: auto;">
+                                            <img src="{{ $skinpedia->gambar }}" alt="{{ $skinpedia->judul }}"
+                                                style="max-width: 100px; height: auto;">
                                         @else
                                             <span>No Image</span>
                                         @endif
                                     </td>
                                     <td>
-                                        <a href="{{ route('skinpedia.edit', $skinpedia->id_skinpedia) }}" class="btn btn-warning">Edit</a>
-                                        <form action="{{ route('skinpedia.destroy', $skinpedia->id_skinpedia) }}" method="POST" style="display:inline-block;">
+                                        <a href="{{ route('skinpedia.edit', $skinpedia->id_skinpedia) }}"
+                                            class="btn btn-warning">Edit</a>
+                                        <form action="{{ route('skinpedia.destroy', $skinpedia->id_skinpedia) }}"
+                                            method="POST" style="display:inline-block;">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger">Delete</button>

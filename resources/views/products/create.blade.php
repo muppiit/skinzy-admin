@@ -53,6 +53,12 @@
                     </select>
                 </div>
 
+                 <!-- Rating Input -->
+                <div class="form-group">
+                    <label for="rating">Rating:</label>
+                    <input type="number" name="rating" id="rating" class="form-control" step="0.1" min="0" max="5">
+                </div>
+
                 <button type="submit" class="btn btn-success">Create Product</button>
                 <a href="{{ route('products.index') }}" class="btn btn-secondary">Back to List</a>
             </form>

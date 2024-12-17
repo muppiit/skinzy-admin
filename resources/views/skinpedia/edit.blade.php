@@ -8,13 +8,15 @@
 
     <div class="card card-solid">
         <div class="card-body">
-            <form action="{{ route('skinpedia.update', $skinpedia->id_skinpedia) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('skinpedia.update', $skinpedia->id_skinpedia) }}" method="POST"
+                enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
-                
+
                 <div class="form-group">
                     <label for="judul">Judul</label>
-                    <input type="text" name="judul" id="judul" class="form-control" value="{{ old('judul', $skinpedia->judul) }}" required>
+                    <input type="text" name="judul" id="judul" class="form-control"
+                        value="{{ old('judul', $skinpedia->judul) }}" required>
                     @error('judul')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
@@ -31,9 +33,10 @@
                 <div class="form-group">
                     <label for="gambar">Gambar</label>
                     <input type="file" name="gambar" id="gambar" class="form-control" accept="image/*">
-                    <small>Current Image: 
+                    <small>Current Image:
                         @if ($skinpedia->gambar)
-                            <img src="{{ asset('storage/' . $skinpedia->gambar) }}" alt="{{ $skinpedia->judul }}" style="max-width: 100px; height: auto;">
+                            <img src="{{ $skinpedia->gambar }}" alt="{{ $skinpedia->judul }}"
+                                style="max-width: 100px; height: auto;">
                         @else
                             <span>No Image</span>
                         @endif
