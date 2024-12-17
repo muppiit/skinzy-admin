@@ -19,9 +19,9 @@ class CheckoutController extends Controller
 
             // Validasi input
             $validated = $request->validate([
-                'history_id' => 'required|exists:user_histories,history_id',
-                'product_id' => 'required|exists:products,product_id',
-                'quantity' => 'required|integer|min:1'
+                'history_id' => 'nullable|exists:user_histories,history_id',
+                'product_id' => 'nullable|exists:products,product_id',
+                'quantity' => 'nullable|integer|min:1'
             ]);
 
             $historyId = $validated['history_id'];
